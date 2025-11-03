@@ -1,7 +1,8 @@
 #define CATCH_CONFIG_MAIN
 #include "catch_amalgamated.hpp"
 #include <iostream>
-#include "MainProgram.cpp" // student submission
+#include <sstream>
+#include "MainProgram.cpp" // student code
 
 // ======================================================
 // CMP2003 Data Structures - Lab 04 Linked List
@@ -9,11 +10,15 @@
 // Each function test worth 1 point
 // ======================================================
 
-// Helper: build a test list
-LinkedListType<int> buildTestList(std::initializer_list<int> items) {
-    LinkedListType<int> list;
-    for (int x : items) list.insertLast(x);
-    return list;
+// Helper: capture printed output
+template <typename T>
+std::string getListOutput(LinkedListType<T>& list) {
+    std::ostringstream oss;
+    // Redirect cout temporarily
+    std::streambuf* oldBuf = std::cout.rdbuf(oss.rdbuf());
+    list.print();
+    std::cout.rdbuf(oldBuf);
+    return oss.str();
 }
 
 // ======================================================
@@ -37,7 +42,11 @@ TEST_CASE("destroyList() resets the list", "[destroyList]") {
 // TEST 2: search()
 // ======================================================
 TEST_CASE("search() finds existing and missing elements", "[search]") {
-    LinkedListType<int> list = buildTestList({5, 10, 15, 20});
+    LinkedListType<int> list;
+    list.insertLast(5);
+    list.insertLast(10);
+    list.insertLast(15);
+    list.insertLast(20);
 
     REQUIRE(list.search(10) == true);
     REQUIRE(list.search(5) == true);
@@ -56,18 +65,11 @@ TEST_CASE("insertFirst() correctly inserts elements at beginning", "[insertFirst
 
     REQUIRE(list.length() == 3);
 
-    // First element should be 300
     REQUIRE(list.front() == 300);
     REQUIRE(list.back() == 100);
 
-    // Check order correctness using print traversal (manual style)
-    std::ostringstream oss;
-    nodeType<int>* currentNode = list.first;
-    while (currentNode != nullptr) {
-        oss << currentNode->info << " ";
-        currentNode = currentNode->link;
-    }
-    REQUIRE(oss.str() == "300 200 100 ");
+    std::string output = getListOutput(list);
+    REQUIRE(output == "300 200 100 ");
 }
 
 // ======================================================
@@ -83,12 +85,6 @@ TEST_CASE("insertLast() correctly inserts elements at the end", "[insertLast]") 
     REQUIRE(list.front() == 10);
     REQUIRE(list.back() == 30);
 
-    // Validate traversal order
-    std::ostringstream oss;
-    nodeType<int>* currentNode = list.first;
-    while (currentNode != nullptr) {
-        oss << currentNode->info << " ";
-        currentNode = currentNode->link;
-    }
-    REQUIRE(oss.str() == "10 20 30 ");
+    std::string output = getListOutput(list);
+    REQUIRE(output == "10 20 30 ");
 }
